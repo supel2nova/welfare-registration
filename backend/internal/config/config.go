@@ -1,8 +1,12 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -11,6 +15,8 @@ type Config struct {
 	DatabaseURL     string
 	CORSOrigin      string
 	StubAuthEnabled bool
+	HashPepper      string
+	EncKey          string
 }
 
 func Load() Config {
@@ -20,7 +26,30 @@ func Load() Config {
 		DatabaseURL:     get("DATABASE_URL", ""),
 		CORSOrigin:      get("CORS_ORIGIN", "http://localhost:5173"),
 		StubAuthEnabled: getBool("STUB_AUTH_ENABLED", false),
+		HashPepper:      get("HASH_PEPPER", ""),
+		EncKey:          get("ENC_KEY", ""),
 	}
+}
+
+func (c Config) Validate() error {
+	var missing []string
+	for k, v := range map[string]string{
+		"DATABASE_URL": c.DatabaseURL,
+		"HASH_PEPPER":  c.HashPepper,
+		"ENC_KEY":      c.EncKey,
+	} {
+		if v == "" {
+			missing = append(missing, k)
+		}
+	}
+	if len(missing) > 0 {
+		sort.Strings(missing)
+		return fmt.Errorf("config: ขาด %s", strings.Join(missing, ", "))
+	}
+	if c.IsProduction() && c.StubAuthEnabled {
+		return errors.New("config: STUB_AUTH_ENABLED=true ใน production")
+	}
+	return nil
 }
 
 func (c Config) IsProduction() bool { return c.Env == "production" }
