@@ -8,7 +8,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const defaultURL = "postgres://welfare:welfare@localhost:5432/welfare?sslmode=disable"
+const (
+	defaultURL = "postgres://welfare:welfare@localhost:5432/welfare?sslmode=disable"
+	lockKey    = 42424201
+)
 
 var tables = []string{
 	"application_status_history", "liabilities", "assets", "income_sources",
@@ -34,7 +37,24 @@ func Pool(t *testing.T) *pgxpool.Pool {
 		pool.Close()
 		t.Skipf("ไม่มี postgres ให้เทส (%v) — สั่ง make up ก่อน", err)
 	}
-	t.Cleanup(pool.Close)
+
+	ctx := context.Background()
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		pool.Close()
+		t.Fatalf("acquire: %v", err)
+	}
+	if _, err := conn.Exec(ctx, `SELECT pg_advisory_lock($1)`, lockKey); err != nil {
+		conn.Release()
+		pool.Close()
+		t.Fatalf("advisory lock: %v", err)
+	}
+
+	t.Cleanup(func() {
+		_, _ = conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, lockKey)
+		conn.Release()
+		pool.Close()
+	})
 	return pool
 }
 
