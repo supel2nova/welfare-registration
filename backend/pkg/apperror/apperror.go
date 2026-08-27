@@ -21,6 +21,7 @@ const (
 	CodeIDVerification = "VAL015"
 	CodeKYC            = "VAL_KYC"
 	CodeDuplicate      = "DUP001"
+	CodeUnauthorized   = "AUTH001"
 	CodeForbidden      = "PERM001"
 	CodeInternal       = "SYS001"
 )
@@ -44,6 +45,7 @@ var messages = map[string]string{
 	CodeIDVerification: "ข้อมูลยืนยันตัวตนไม่สอดคล้องกัน",
 	CodeKYC:            "ยืนยันตัวตนไม่ผ่าน",
 	CodeDuplicate:      "เลขประจำตัวประชาชนนี้ลงทะเบียนแล้ว",
+	CodeUnauthorized:   "ต้องเข้าสู่ระบบก่อน",
 	CodeForbidden:      "ไม่มีสิทธิ์ดำเนินการ",
 	CodeInternal:       "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
 }
@@ -107,6 +109,10 @@ func Duplicate(data any) *Error {
 		Message:    messages[CodeDuplicate],
 		Data:       data,
 	}
+}
+
+func Unauthorized() *Error {
+	return &Error{HTTPStatus: 401, Code: CodeUnauthorized, Message: messages[CodeUnauthorized]}
 }
 
 func Forbidden() *Error {

@@ -10,24 +10,26 @@ import (
 )
 
 type Config struct {
-	Env             string
-	HTTPPort        string
-	DatabaseURL     string
-	CORSOrigin      string
-	StubAuthEnabled bool
-	HashPepper      string
-	EncKey          string
+	Env               string
+	HTTPPort          string
+	DatabaseURL       string
+	CORSOrigin        string
+	StubAuthEnabled   bool
+	StubDefaultUserID string
+	HashPepper        string
+	EncKey            string
 }
 
 func Load() Config {
 	return Config{
-		Env:             get("APP_ENV", "development"),
-		HTTPPort:        get("HTTP_PORT", "8080"),
-		DatabaseURL:     get("DATABASE_URL", ""),
-		CORSOrigin:      get("CORS_ORIGIN", "http://localhost:5173"),
-		StubAuthEnabled: getBool("STUB_AUTH_ENABLED", false),
-		HashPepper:      get("HASH_PEPPER", ""),
-		EncKey:          get("ENC_KEY", ""),
+		Env:               get("APP_ENV", "development"),
+		HTTPPort:          get("HTTP_PORT", "8080"),
+		DatabaseURL:       get("DATABASE_URL", ""),
+		CORSOrigin:        get("CORS_ORIGIN", "http://localhost:5173"),
+		StubAuthEnabled:   getBool("STUB_AUTH_ENABLED", false),
+		StubDefaultUserID: get("STUB_DEFAULT_USER_ID", ""),
+		HashPepper:        get("HASH_PEPPER", ""),
+		EncKey:            get("ENC_KEY", ""),
 	}
 }
 
