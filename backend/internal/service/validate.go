@@ -16,14 +16,17 @@ import (
 )
 
 var (
-	thaiName   = regexp.MustCompile(`^[\p{Thai} .]+$`)
-	phone      = regexp.MustCompile(`^0[689]\d{8}$`)
-	amount     = regexp.MustCompile(`^\d+(\.\d{1,2})?$`)
-	digits2    = regexp.MustCompile(`^\d{2}$`)
-	digits4    = regexp.MustCompile(`^\d{4}$`)
-	digits5    = regexp.MustCompile(`^\d{5}$`)
-	digits6    = regexp.MustCompile(`^\d{6}$`)
-	maxNameLen = 100
+	thaiName      = regexp.MustCompile(`^[\p{Thai} .-]+$`)
+	thaiConsonant = regexp.MustCompile(`[\x{0E01}-\x{0E2E}]`)
+	thaiDigit     = regexp.MustCompile(`[\x{0E50}-\x{0E59}]`)
+	mobile        = regexp.MustCompile(`^0[689]\d{8}$`)
+	landline      = regexp.MustCompile(`^0[2-7]\d{7}$`)
+	amount        = regexp.MustCompile(`^\d+(\.\d{1,2})?$`)
+	digits2       = regexp.MustCompile(`^\d{2}$`)
+	digits4       = regexp.MustCompile(`^\d{4}$`)
+	digits5       = regexp.MustCompile(`^\d{5}$`)
+	digits6       = regexp.MustCompile(`^\d{6}$`)
+	maxNameLen    = 100
 )
 
 type errs []apperror.FieldError
@@ -77,7 +80,7 @@ func validatePersonal(e *errs, p dto.Personal, today time.Time) {
 		e.add("personal."+field, apperror.CodeBirthDate)
 	}
 
-	if !phone.MatchString(p.Phone) {
+	if !isValidPhone(p.Phone) {
 		e.add("personal.phone", apperror.CodePhone)
 	}
 
@@ -242,8 +245,18 @@ func validateAsset(e *errs, path string, a dto.Asset) {
 	}
 }
 
+func isValidPhone(s string) bool {
+	return mobile.MatchString(s) || landline.MatchString(s)
+}
+
 func isThaiName(s string, max int) bool {
 	s = strings.TrimSpace(s)
 	n := utf8.RuneCountInString(s)
-	return n >= 1 && n <= max && thaiName.MatchString(s)
+	if n < 1 || n > max {
+		return false
+	}
+	if !thaiName.MatchString(s) || thaiDigit.MatchString(s) {
+		return false
+	}
+	return thaiConsonant.MatchString(s)
 }

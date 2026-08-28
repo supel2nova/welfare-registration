@@ -107,6 +107,26 @@ func TestValidateFormat(t *testing.T) {
 			r.Personal.Phone = "123456"
 		}, "personal.phone", apperror.CodePhone},
 
+		{"มือถือ 9 หลัก ขาดไปหนึ่งตัว", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "081234567"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"เบอร์บ้าน 8 หลัก สั้นไป", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "02123456"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"เบอร์บ้าน 10 หลัก ยาวไป", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "0212345678"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"ส่งมาพร้อมขีดคั่น", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "099-119-2231"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"ขึ้นต้นด้วย 1", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "1234567890"
+		}, "personal.phone", apperror.CodePhone},
+
 		{"#11 รายได้ติดลบ", func(r *dto.CreateApplicationRequest) {
 			r.Financial.IncomeSources[0].AnnualAmount = -100
 		}, "financial.income_sources[0].annual_amount", apperror.CodeNegative},
@@ -202,6 +222,30 @@ func TestValidateFormat(t *testing.T) {
 		{"ชื่อสมาชิกมีตัวเลข", func(r *dto.CreateApplicationRequest) {
 			r.Family.Members[0].FullName = "สมหญิง 2"
 		}, "family.members[0].full_name", apperror.CodeName},
+
+		{"ชื่อเป็นจุดล้วน ไม่มีตัวอักษรสักตัว", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "..."
+		}, "personal.first_name", apperror.CodeName},
+
+		{"ชื่อเป็นไม้ยมกล้วน", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "ๆๆๆ"
+		}, "personal.first_name", apperror.CodeName},
+
+		{"ชื่อมีเลขไทย", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "สมชาย๑๒๓"
+		}, "personal.first_name", apperror.CodeName},
+
+		{"ชื่อเป็นอักษรโรมัน", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "John"
+		}, "personal.first_name", apperror.CodeName},
+
+		{"ชื่อไทยปนอังกฤษ", func(r *dto.CreateApplicationRequest) {
+			r.Personal.LastName = "ใจดี Smith"
+		}, "personal.last_name", apperror.CodeName},
+
+		{"ชื่อว่างเปล่า", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "   "
+		}, "personal.first_name", apperror.CodeName},
 	}
 
 	for _, c := range cases {
@@ -238,6 +282,26 @@ func TestValidateFormatPasses(t *testing.T) {
 
 		{"#12 ไม่มีรายได้เลย", func(r *dto.CreateApplicationRequest) {
 			r.Financial.IncomeSources = nil
+		}},
+
+		{"มือถือ AIS 10 หลัก", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "0991192231"
+		}},
+
+		{"มือถือ 06 นำหน้า", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "0645556677"
+		}},
+
+		{"เบอร์บ้านกรุงเทพ 9 หลัก", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "021234567"
+		}},
+
+		{"เบอร์บ้านต่างจังหวัด 9 หลัก", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "053123456"
+		}},
+
+		{"เบอร์บ้านภาคใต้ 9 หลัก", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "074123456"
 		}},
 
 		{"#14 ไม่กรอกข้อมูลครอบครัว", func(r *dto.CreateApplicationRequest) {
@@ -277,6 +341,14 @@ func TestValidateFormatPasses(t *testing.T) {
 
 		{"ชื่อมีจุดและเว้นวรรค", func(r *dto.CreateApplicationRequest) {
 			r.Personal.FirstName = "สมชาย ณ ป้อมเพชร"
+		}},
+
+		{"นามสกุลมีขีดคั่น (ชื่อไทยมุสลิม)", func(r *dto.CreateApplicationRequest) {
+			r.Personal.LastName = "อัล-ฮาซัน"
+		}},
+
+		{"ชื่อมีคำนำหน้าราชสกุลย่อ", func(r *dto.CreateApplicationRequest) {
+			r.Personal.FirstName = "ม.ร.ว.สมชาย"
 		}},
 	}
 
