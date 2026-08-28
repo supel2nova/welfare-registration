@@ -82,6 +82,7 @@ function onInput(e: Event) {
         :max="grouped ? undefined : max"
         :step="grouped ? undefined : (step ?? 1)"
         :disabled="disabled || isSubmitting"
+        :aria-invalid="error ? true : undefined"
         @input="onInput"
       />
       <span class="field-suffix">{{ suffix }}</span>
@@ -97,6 +98,7 @@ function onInput(e: Event) {
       :max="grouped ? undefined : max"
       :step="grouped ? undefined : (step ?? 1)"
       :disabled="disabled || isSubmitting"
+      :aria-invalid="error ? true : undefined"
       @input="onInput"
     />
     <span v-if="error" class="field-error">{{ error }}</span>

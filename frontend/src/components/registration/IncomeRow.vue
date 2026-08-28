@@ -32,6 +32,7 @@ const base = computed(() => `financial.income_sources[${props.index}]`)
         label="รายได้ต่อปี"
         :model-value="income.annual_amount"
         format="amount"
+        placeholder="0"
         suffix="บาท"
         @update:model-value="(v) => (income.annual_amount = v ?? 0)"
       />

@@ -60,7 +60,7 @@ export const registrationBaseSchema = z.object({
       title: z.string().optional(),
       first_name: z.string().optional(),
       last_name: z.string().optional(),
-      birth_year_be: z.number().optional(),
+      birth_year_be: z.number().nullable().optional(),
       birth_month: z.number().nullable().optional(),
       birth_day: z.number().nullable().optional(),
       birth_precision: z.string().optional(),
@@ -118,7 +118,7 @@ export const registrationSubmitSchema = registrationBaseSchema.superRefine((val,
   if (p.birth_year_be == null) {
     ctx.addIssue({
       code: 'custom',
-      path: ['personal', 'birth_year_be'],
+      path: ['personal', 'birth_year'],
       message: 'ปีเกิดไม่ถูกต้อง',
     })
   }

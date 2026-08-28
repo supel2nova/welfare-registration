@@ -48,6 +48,15 @@ func (h *RefHandler) Subdistricts(c *gin.Context) {
 	writeCached(c, items)
 }
 
+func (h *RefHandler) SearchAddress(c *gin.Context) {
+	items, err := h.svc.SearchAddress(c.Request.Context(), c.Query("q"))
+	if err != nil {
+		writeErr(c, err)
+		return
+	}
+	writeCached(c, items)
+}
+
 func writeCached(c *gin.Context, data any) {
 	env := httpx.OK(data)
 	body, err := json.Marshal(env)

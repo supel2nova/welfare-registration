@@ -36,6 +36,46 @@ WHERE s.code = $1 AND d.code = $2 AND p.code = $3`
 	return a, err
 }
 
+const AddressSearchLimit = 30
+
+func (r *Repo) SearchAddress(ctx context.Context, q string) ([]dto.AddressOption, error) {
+	const sql = `
+SELECT s.code, s.name_th, s.kind,
+       d.code, d.name_th, d.kind,
+       p.code, p.name_th,
+       sp.postal_code
+FROM ref_subdistricts s
+JOIN ref_districts d ON d.code = s.district_code
+JOIN ref_provinces p ON p.code = d.province_code
+JOIN ref_subdistrict_postal sp ON sp.subdistrict_code = s.code
+WHERE s.name_th ILIKE $1
+   OR d.name_th ILIKE $1
+   OR p.name_th ILIKE $1
+   OR sp.postal_code LIKE $2
+ORDER BY (s.name_th ILIKE $2) DESC, s.name_th, sp.is_primary DESC, sp.postal_code
+LIMIT $3`
+
+	rows, err := r.pool.Query(ctx, sql, "%"+q+"%", q+"%", AddressSearchLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []dto.AddressOption{}
+	for rows.Next() {
+		var a dto.AddressOption
+		if err := rows.Scan(
+			&a.SubdistrictCode, &a.SubdistrictName, &a.SubdistrictKind,
+			&a.DistrictCode, &a.DistrictName, &a.DistrictKind,
+			&a.ProvinceCode, &a.ProvinceName, &a.PostalCode,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, a)
+	}
+	return items, rows.Err()
+}
+
 func (r *Repo) Provinces(ctx context.Context) ([]dto.RefItem, error) {
 	return r.refItems(ctx, `SELECT code, name_th FROM ref_provinces ORDER BY code`)
 }

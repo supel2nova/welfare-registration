@@ -28,7 +28,12 @@ const base = computed(() => `family.members[${props.index}]`)
         v-model="member.relation"
         :options="relationOptions"
       />
-      <FieldText :path="`${base}.full_name`" label="ชื่อ-นามสกุล" v-model="member.full_name" />
+      <FieldText
+        :path="`${base}.full_name`"
+        label="ชื่อ-นามสกุล"
+        v-model="member.full_name"
+        placeholder="สมหญิง ใจดี"
+      />
       <FieldText
         :path="`${base}.national_id`"
         label="เลขบัตร (ถ้ามี)"
@@ -41,6 +46,7 @@ const base = computed(() => `family.members[${props.index}]`)
         label="รายได้ต่อปี"
         v-model="member.annual_income"
         format="amount"
+        placeholder="0"
         suffix="บาท"
       />
     </div>

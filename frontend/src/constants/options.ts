@@ -13,12 +13,6 @@ export const titleOptions: SelectOption[] = [
   { value: 'นางสาว', label: 'นางสาว' },
 ]
 
-export const precisionOptions: SelectOption[] = [
-  { value: 'FULL', label: 'วัน เดือน ปี' },
-  { value: 'YEAR_MONTH', label: 'เดือน ปี' },
-  { value: 'YEAR_ONLY', label: 'ปีอย่างเดียว' },
-]
-
 export const maritalOptions: SelectOption[] = [
   { value: 'SINGLE', label: 'โสด' },
   { value: 'MARRIED', label: 'สมรส' },
@@ -117,9 +111,9 @@ export function emptyForm(): RegistrationForm {
       title: 'นาย',
       first_name: '',
       last_name: '',
-      birth_year_be: 2528,
-      birth_month: 3,
-      birth_day: 12,
+      birth_year_be: null,
+      birth_month: null,
+      birth_day: null,
       birth_precision: 'FULL',
       phone: '',
       is_farmer: true,

@@ -23,6 +23,18 @@ type RefItem struct {
 	NameTH string `json:"name_th"`
 }
 
+type AddressOption struct {
+	SubdistrictCode string `json:"subdistrict_code"`
+	SubdistrictName string `json:"subdistrict_name"`
+	SubdistrictKind string `json:"subdistrict_kind"`
+	DistrictCode    string `json:"district_code"`
+	DistrictName    string `json:"district_name"`
+	DistrictKind    string `json:"district_kind"`
+	ProvinceCode    string `json:"province_code"`
+	ProvinceName    string `json:"province_name"`
+	PostalCode      string `json:"postal_code"`
+}
+
 type DevUser struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`

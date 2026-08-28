@@ -44,33 +44,43 @@ export function isLaserIdComplete(value: string): boolean {
   return parseLaserId(value).length === 12
 }
 
-export function parsePhone(value: string): string {
-  const d = digitsOnly(value)
-  return isMobilePhone(d) ? d.slice(0, 10) : d.slice(0, 9)
-}
+const mobilePattern = /^0[689]\d{8}$/
+const landlinePattern = /^0[2-7]\d{7}$/
 
 export function isMobilePhone(digits: string): boolean {
   return /^0[689]/.test(digits)
 }
 
+export function isLandlinePhone(digits: string): boolean {
+  return /^0[2-7]/.test(digits)
+}
+
+export function parsePhone(value: string): string {
+  const d = digitsOnly(value)
+  return isLandlinePhone(d) ? d.slice(0, 9) : d.slice(0, 10)
+}
+
 export function formatPhone(value: string): string {
   const d = parsePhone(value)
-  if (isMobilePhone(d)) {
-    if (d.length <= 3) return d
-    if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`
-    return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 10)}`
-  }
+
   if (d.startsWith('02')) {
     if (d.length <= 2) return d
     if (d.length <= 5) return `${d.slice(0, 2)}-${d.slice(2)}`
     return `${d.slice(0, 2)}-${d.slice(2, 5)}-${d.slice(5, 9)}`
   }
+
+  if (isLandlinePhone(d)) {
+    if (d.length <= 3) return d
+    if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`
+    return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 9)}`
+  }
+
   if (d.length <= 3) return d
   if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`
-  return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 9)}`
+  return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6, 10)}`
 }
 
-export function isPhoneComplete(value: string): boolean {
+export function isPhoneValid(value: string): boolean {
   const d = parsePhone(value)
-  return isMobilePhone(d) ? d.length === 10 : d.length === 9
+  return mobilePattern.test(d) || landlinePattern.test(d)
 }

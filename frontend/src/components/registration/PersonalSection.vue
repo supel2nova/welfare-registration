@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import BirthDateField from '@/components/registration/BirthDateField.vue'
 import FieldNumber from '@/components/fields/FieldNumber.vue'
 import FieldSelect from '@/components/fields/FieldSelect.vue'
 import FieldText from '@/components/fields/FieldText.vue'
 import FormSection from '@/components/common/FormSection.vue'
 import { useFormContext } from '@/composables/useFormContext'
-import { precisionOptions, titleOptions } from '@/constants/options'
+import { titleOptions } from '@/constants/options'
 import type { PersonalForm } from '@/types/form'
 
 const props = defineProps<{
@@ -59,42 +60,29 @@ function onNoLaserChange() {
         format="phone"
         placeholder="099-119-2231"
       />
-      <FieldText path="personal.first_name" label="ชื่อ" v-model="personal.first_name" />
-      <FieldText path="personal.last_name" label="นามสกุล" v-model="personal.last_name" />
-    </div>
-
-    <div class="mt-3.5 grid-form-3">
-      <FieldNumber
-        path="personal.birth_year"
-        label="ปีเกิด (พ.ศ.)"
-        :model-value="personal.birth_year_be"
-        :min="2443"
-        @update:model-value="(v) => (personal.birth_year_be = v ?? 2528)"
+      <FieldText
+        path="personal.first_name"
+        label="ชื่อ"
+        v-model="personal.first_name"
+        placeholder="สมชาย"
       />
-      <FieldNumber
-        path="personal.birth_month"
-        label="เดือน"
-        v-model="personal.birth_month"
-        :min="1"
-        :max="12"
-        :disabled="personal.birth_precision === 'YEAR_ONLY'"
-      />
-      <FieldNumber
-        path="personal.birth_day"
-        label="วัน"
-        v-model="personal.birth_day"
-        :min="1"
-        :max="31"
-        :disabled="personal.birth_precision !== 'FULL'"
+      <FieldText
+        path="personal.last_name"
+        label="นามสกุล"
+        v-model="personal.last_name"
+        placeholder="ใจดี"
       />
     </div>
 
     <div class="mt-3.5">
-      <FieldSelect
-        path="personal.birth_precision"
-        label="ความละเอียดวันเกิด"
-        v-model="personal.birth_precision"
-        :options="precisionOptions"
+      <BirthDateField
+        :year="personal.birth_year_be"
+        :month="personal.birth_month"
+        :day="personal.birth_day"
+        @update:year="(v) => (personal.birth_year_be = v)"
+        @update:month="(v) => (personal.birth_month = v)"
+        @update:day="(v) => (personal.birth_day = v)"
+        @update:precision="(v) => (personal.birth_precision = v)"
       />
     </div>
 
@@ -127,7 +115,7 @@ function onNoLaserChange() {
       path="personal.id_verify_note"
       label="เหตุผลที่ยืนยันด้วยตา"
       v-model="personal.id_verify_note"
-      placeholder="อย่างน้อย 10 ตัวอักษร"
+      placeholder="เช่น บัตรตลอดชีพ รหัสหลังบัตรเลือนอ่านไม่ออก"
     />
   </FormSection>
 </template>

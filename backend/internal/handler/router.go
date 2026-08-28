@@ -35,10 +35,12 @@ func NewRouter(d Deps) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
-		refGroup := v1.Group("/ref", middleware.CacheControl())
-		refGroup.GET("/provinces", ref.Provinces)
-		refGroup.GET("/districts", ref.Districts)
-		refGroup.GET("/subdistricts", ref.Subdistricts)
+		refGroup := v1.Group("/ref")
+		refData := middleware.CacheControl(middleware.CacheRefData)
+		refGroup.GET("/provinces", refData, ref.Provinces)
+		refGroup.GET("/districts", refData, ref.Districts)
+		refGroup.GET("/subdistricts", refData, ref.Subdistricts)
+		refGroup.GET("/address-search", middleware.CacheControl(middleware.CacheSearch), ref.SearchAddress)
 
 		auth := middleware.StubAuth(d.Repo, d.Cfg.StubAuthEnabled && !d.Cfg.IsProduction(), d.Cfg.StubDefaultUserID)
 		v1.POST("/applications", auth, apps.Create)

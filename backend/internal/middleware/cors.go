@@ -10,7 +10,7 @@ func CORS(origin string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if origin != "" && origin != "*" {
 			c.Header("Access-Control-Allow-Origin", origin)
-			c.Header("Access-Control-Allow-Headers", "Content-Type, X-Debug-User-Id")
+			c.Header("Access-Control-Allow-Headers", "Content-Type, Cache-Control, X-Debug-User-Id")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 			c.Header("Vary", "Origin")
 		}

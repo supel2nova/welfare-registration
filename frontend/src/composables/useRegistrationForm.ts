@@ -80,7 +80,7 @@ export function useRegistrationForm() {
         title: p.title,
         first_name: p.first_name,
         last_name: p.last_name,
-        birth_year: toCE(p.birth_year_be),
+        birth_year: p.birth_year_be == null ? 0 : toCE(p.birth_year_be),
         birth_month,
         birth_day,
         birth_precision: precision,

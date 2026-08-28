@@ -7,7 +7,7 @@ import {
   formatPhone,
   isLaserIdComplete,
   isNationalIdComplete,
-  isPhoneComplete,
+  isPhoneValid,
   parseNationalId,
   parsePhone,
 } from '@/utils/idFormat'
@@ -91,8 +91,11 @@ function onBlur() {
     return
   }
 
-  if (props.format === 'phone' && !isPhoneComplete(raw)) {
-    setError(props.path, 'มือถือ 10 หลัก หรือเบอร์บ้าน 9 หลัก เช่น 099-119-2231 หรือ 02-123-4567')
+  if (props.format === 'phone' && !isPhoneValid(raw)) {
+    setError(
+      props.path,
+      'เบอร์ต้องขึ้นต้นด้วย 0 — มือถือ 10 หลัก (06/08/09) หรือเบอร์บ้าน 9 หลัก (02–07)',
+    )
   }
 }
 </script>
@@ -108,6 +111,7 @@ function onBlur() {
       :placeholder="placeholder"
       :maxlength="inputMaxlength"
       :disabled="disabled || isSubmitting"
+      :aria-invalid="error ? true : undefined"
       autocomplete="off"
       spellcheck="false"
       @input="onInput"

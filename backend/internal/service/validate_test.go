@@ -127,6 +127,22 @@ func TestValidateFormat(t *testing.T) {
 			r.Personal.Phone = "1234567890"
 		}, "personal.phone", apperror.CodePhone},
 
+		{"ขึ้นต้นด้วย 9 ไม่ใช่ 0", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "9912345678"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"ส่งมาเป็นรูปแบบสากล +66", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "+66812345678"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"ตัด 0 ออกแล้วใส่ 66 นำหน้า", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "66812345678"
+		}, "personal.phone", apperror.CodePhone},
+
+		{"มือถือขึ้นต้น 07 (ไม่มีจริง)", func(r *dto.CreateApplicationRequest) {
+			r.Personal.Phone = "0712345678"
+		}, "personal.phone", apperror.CodePhone},
+
 		{"#11 รายได้ติดลบ", func(r *dto.CreateApplicationRequest) {
 			r.Financial.IncomeSources[0].AnnualAmount = -100
 		}, "financial.income_sources[0].annual_amount", apperror.CodeNegative},

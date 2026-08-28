@@ -46,6 +46,7 @@ function removeFrom(list: unknown[], idx: number) {
         label="เงินส่งคนอื่นต่อปี"
         :model-value="financial.expense_to_others"
         format="amount"
+        placeholder="0"
         suffix="บาท"
         @update:model-value="(v) => (financial.expense_to_others = v ?? 0)"
       />

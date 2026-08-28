@@ -42,7 +42,18 @@ func TestResolveAddress(t *testing.T) {
 	})
 
 	t.Run("ตำบลหนึ่งมีได้หลายรหัสไปรษณีย์", func(t *testing.T) {
-		for _, postal := range []string{"50200", "50100"} {
+		const extra = "50100"
+		if _, err := r.Pool().Exec(ctx,
+			`INSERT INTO ref_subdistrict_postal (subdistrict_code, postal_code, is_primary)
+			 VALUES ('500108', $1, false) ON CONFLICT DO NOTHING`, extra); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			_, _ = r.Pool().Exec(context.Background(),
+				`DELETE FROM ref_subdistrict_postal WHERE subdistrict_code = '500108' AND postal_code = $1`, extra)
+		})
+
+		for _, postal := range []string{"50200", extra} {
 			got, err := r.ResolveAddress(ctx, "50", "5001", "500108", postal)
 			if err != nil || !got.PostalMatches {
 				t.Errorf("%s: %+v %v", postal, got, err)
@@ -85,12 +96,121 @@ func TestResolveAddress(t *testing.T) {
 	})
 }
 
+func TestSearchAddress(t *testing.T) {
+	r := newRepo(t)
+	ctx := context.Background()
+
+	t.Run("ค้นจากชื่อตำบล ได้อำเภอกับจังหวัดติดมาด้วย", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "ริมใต้")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) == 0 {
+			t.Fatal("ไม่เจอ")
+		}
+		a := got[0]
+		if a.SubdistrictName != "ริมใต้" || a.DistrictName != "แม่ริม" || a.ProvinceName != "เชียงใหม่" || a.PostalCode != "50180" {
+			t.Fatalf("ได้ %+v", a)
+		}
+	})
+
+	t.Run("ค้นจากชื่ออำเภอ ได้ทุกตำบลในอำเภอนั้น", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "แม่ริม")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) < 6 {
+			t.Fatalf("ควรได้หลายตำบล ได้ %d", len(got))
+		}
+		for _, a := range got {
+			if a.DistrictName != "แม่ริม" {
+				t.Errorf("หลุดอำเภออื่นมา: %+v", a)
+			}
+		}
+	})
+
+	t.Run("ค้นจากรหัสไปรษณีย์", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "50180")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) == 0 {
+			t.Fatal("ไม่เจอ")
+		}
+		for _, a := range got {
+			if a.PostalCode != "50180" {
+				t.Errorf("รหัสไปรษณีย์ไม่ตรง: %+v", a)
+			}
+		}
+	})
+
+	t.Run("★ ตำบลที่มีสองรหัสไปรษณีย์ ขึ้นสองบรรทัดให้เลือก", func(t *testing.T) {
+		const extra = "50100"
+		if _, err := r.Pool().Exec(ctx,
+			`INSERT INTO ref_subdistrict_postal (subdistrict_code, postal_code, is_primary)
+			 VALUES ('500108', $1, false) ON CONFLICT DO NOTHING`, extra); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			_, _ = r.Pool().Exec(context.Background(),
+				`DELETE FROM ref_subdistrict_postal WHERE subdistrict_code = '500108' AND postal_code = $1`, extra)
+		})
+
+		got, err := r.SearchAddress(ctx, "สุเทพ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		postals := map[string]bool{}
+		for _, a := range got {
+			if a.SubdistrictCode == "500108" {
+				postals[a.PostalCode] = true
+			}
+		}
+		if len(postals) != 2 {
+			t.Fatalf("ตำบลที่มี 2 รหัสไปรษณีย์ ต้องได้ 2 บรรทัด ได้ %v", postals)
+		}
+	})
+
+	t.Run("กทม. ใช้คำว่าแขวงกับเขต", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "สีลม")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) == 0 {
+			t.Fatal("ไม่เจอ")
+		}
+		if got[0].SubdistrictKind != "แขวง" || got[0].DistrictKind != "เขต" {
+			t.Fatalf("ได้ %q / %q", got[0].SubdistrictKind, got[0].DistrictKind)
+		}
+	})
+
+	t.Run("คำที่ไม่มีในระบบ คืน [] ไม่ใช่ null", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "ไม่มีตำบลนี้จริง")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got == nil || len(got) != 0 {
+			t.Fatalf("ได้ %+v", got)
+		}
+	})
+
+	t.Run("จำกัดจำนวนผลลัพธ์", func(t *testing.T) {
+		got, err := r.SearchAddress(ctx, "า")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got) > repository.AddressSearchLimit {
+			t.Fatalf("ได้ %d เกิน %d", len(got), repository.AddressSearchLimit)
+		}
+	})
+}
+
 func TestRefLists(t *testing.T) {
 	r := newRepo(t)
 	ctx := context.Background()
 
 	provinces, err := r.Provinces(ctx)
-	if err != nil || len(provinces) != 3 {
+	if err != nil || len(provinces) != 77 {
 		t.Fatalf("provinces = %d %v", len(provinces), err)
 	}
 

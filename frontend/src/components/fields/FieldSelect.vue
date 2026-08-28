@@ -32,6 +32,7 @@ function onChange(e: Event) {
       :class="cn('field-input', 'field-select', error && 'field-input-error')"
       :value="modelValue ?? ''"
       :disabled="disabled || isSubmitting"
+      :aria-invalid="error ? true : undefined"
       @change="onChange"
     >
       <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>

@@ -109,3 +109,15 @@ export type CreateApplicationRequest = {
     has_credit_card: boolean
   }
 }
+
+export type AddressOption = {
+  subdistrict_code: string
+  subdistrict_name: string
+  subdistrict_kind: string
+  district_code: string
+  district_name: string
+  district_kind: string
+  province_code: string
+  province_name: string
+  postal_code: string
+}

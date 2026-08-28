@@ -39,6 +39,7 @@ function onTypeChange(value: string) {
         label="จำนวน"
         :model-value="typeof asset.amount === 'number' ? asset.amount : Number(asset.amount)"
         format="amount"
+        placeholder="0"
         :suffix="unitLabel"
         @update:model-value="(v) => (asset.amount = v ?? 0)"
       />

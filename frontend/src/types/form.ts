@@ -33,7 +33,7 @@ export type PersonalForm = {
   title: string
   first_name: string
   last_name: string
-  birth_year_be: number
+  birth_year_be: number | null
   birth_month: number | null
   birth_day: number | null
   birth_precision: string

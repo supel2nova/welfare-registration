@@ -32,6 +32,7 @@ const base = computed(() => `financial.liabilities[${props.index}]`)
         label="วงเงิน"
         :model-value="liability.credit_limit"
         format="amount"
+        placeholder="0"
         suffix="บาท"
         @update:model-value="(v) => (liability.credit_limit = v ?? 0)"
       />

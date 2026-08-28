@@ -55,7 +55,7 @@
   --shadow-card: 0 1px 0 rgb(20 32 51 / 0.04), 0 12px 32px rgb(20 32 51 / 0.06);
   --shadow-dialog: 0 24px 60px rgb(20 32 51 / 0.25);
 
-  --animate-rise: rise 0.45s ease both;
+  --animate-rise: rise 0.45s ease forwards;
   --animate-fade: fade 0.2s ease;
 
   --radius-control: 0.375rem;
@@ -68,7 +68,7 @@
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -138,6 +138,14 @@
     @apply text-sm font-semibold text-ink-muted;
   }
 
+  .field-static {
+    @apply m-0 w-full select-none rounded-[var(--radius-control)] border border-dashed border-line bg-page px-3 py-2.5 font-body text-ink-muted;
+  }
+
+  .field-static-empty {
+    @apply text-neutral-400 italic;
+  }
+
   .field-input {
     @apply w-full rounded-[var(--radius-control)] border border-line bg-white px-3 py-2.5 font-body text-ink transition-[border-color,box-shadow] focus:border-focus focus:outline-none focus:ring-[3px] focus:ring-brand-500/20 disabled:bg-page disabled:text-ink-muted;
   }
@@ -161,8 +169,8 @@
     @apply pointer-events-none absolute right-3 text-sm font-semibold text-ink-muted;
   }
 
-  .field-input-error {
-    @apply border-danger-500 bg-danger-50;
+  .field-input.field-input-error {
+    @apply border-danger-500 bg-danger-50 focus:border-danger-500 focus:ring-danger-500/25;
   }
 
   .field-input-mono {
@@ -235,6 +243,38 @@
 
   .check-box {
     @apply mt-0.5 h-[1.15rem] w-[1.15rem] shrink-0 cursor-pointer accent-[var(--color-brand-600)];
+  }
+
+  .combo-list {
+    @apply absolute z-[60] w-max max-w-[26rem] list-none overflow-y-auto rounded-md border border-line bg-white p-1 shadow-card;
+  }
+
+  .combo-item {
+    @apply flex cursor-pointer flex-col gap-0.5 rounded-[var(--radius-control)] px-3 py-2 text-sm;
+  }
+
+  .combo-item-active {
+    @apply bg-brand-50;
+  }
+
+  .combo-empty {
+    @apply px-3 py-2 text-sm text-ink-muted;
+  }
+
+  .combo-selected {
+    @apply mt-2 flex items-center justify-between gap-3 rounded-[var(--radius-control)] border border-line bg-white px-3 py-2 text-sm;
+  }
+
+  .info-trigger {
+    @apply cursor-pointer border-0 bg-transparent p-0 text-sm font-normal text-ink-muted underline decoration-dotted underline-offset-4 transition-colors hover:text-brand-600;
+  }
+
+  .info-panel {
+    @apply absolute right-0 top-7 z-20 w-72 rounded-md border border-line bg-white p-3 text-sm font-normal leading-relaxed text-ink shadow-card;
+  }
+
+  .field-group-label {
+    @apply mb-1.5 flex items-center justify-end gap-3 text-sm font-semibold text-ink-muted;
   }
 
   .item-head {
