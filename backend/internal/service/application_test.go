@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -25,8 +26,8 @@ const (
 )
 
 var (
-	orgBAAC = uuid.MustParse("22222222-2222-2222-2222-222222222222")
-	orgKTB  = uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	orgBAAC  = uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	orgKTB   = uuid.MustParse("11111111-1111-1111-1111-111111111111")
 	userBAAC = uuid.MustParse("aaaaaaaa-0000-0000-0000-000000000002")
 	userKTB  = uuid.MustParse("aaaaaaaa-0000-0000-0000-000000000001")
 	appNoRE  = regexp.MustCompile(`^WC-2026-\d{7}$`)
@@ -398,5 +399,40 @@ func TestBuildSnapshot_NoLaserID(t *testing.T) {
 	}
 	if !regexp.MustCompile(`national_id_mask`).MatchString(string(raw)) {
 		t.Fatal("ต้องมี national_id_mask")
+	}
+}
+
+func TestBuildSnapshot_MasksMemberNationalID(t *testing.T) {
+	req := validRequest()
+	spouseID := "5349900888349"
+	childID := "1349900123455"
+	req.Family = &dto.Family{
+		MaritalStatus: func() *string { v := "MARRIED"; return &v }(),
+		Members: []dto.Member{
+			{Relation: "SPOUSE", NationalID: &spouseID, FullName: "นางสมหญิง ใจดี"},
+			{Relation: "CHILD", NationalID: nil, FullName: "เด็กชายสมเกียรติ ใจดี"},
+			{Relation: "PARENT", NationalID: &childID, FullName: "นางมาลี ใจดี"},
+		},
+	}
+
+	raw, err := buildSnapshot(req, repository.ResolvedAddress{})
+	if err != nil {
+		t.Fatalf("buildSnapshot: %v", err)
+	}
+	body := string(raw)
+
+	for _, id := range []string{spouseID, childID, req.Personal.NationalID} {
+		if strings.Contains(body, id) {
+			t.Fatalf("snapshot ต้องไม่มีเลขบัตรเต็ม แต่พบ %s ใน %s", id, body)
+		}
+	}
+	if !strings.Contains(body, "5-3499-xxxxx-xx-9") {
+		t.Fatalf("ต้องมี mask ของคู่สมรส: %s", body)
+	}
+	if !strings.Contains(body, `"national_id_mask":null`) {
+		t.Fatalf("สมาชิกที่ไม่ระบุเลขบัตรต้องได้ mask เป็น null: %s", body)
+	}
+	if strings.Contains(body, `"national_id"`) {
+		t.Fatalf("ต้องไม่มี key national_id เหลืออยู่: %s", body)
 	}
 }

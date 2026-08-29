@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/supel2nova/welfare-registration/backend/pkg/apperror"
@@ -14,9 +15,11 @@ func writeOK(c *gin.Context, status int, data any) {
 
 func writeErr(c *gin.Context, err error) {
 	var ae *apperror.Error
-	if errors.As(err, &ae) {
-		c.JSON(httpx.Fail(ae))
-		return
+	if !errors.As(err, &ae) {
+		ae = apperror.Internal(err)
 	}
-	c.JSON(httpx.Fail(apperror.Internal(err)))
+	if ae.HTTPStatus >= 500 {
+		log.Printf("%s %s -> %d %v", c.Request.Method, c.Request.URL.Path, ae.HTTPStatus, ae)
+	}
+	c.JSON(httpx.Fail(ae))
 }

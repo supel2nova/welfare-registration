@@ -30,12 +30,25 @@ type snapshotAddressNames struct {
 	ProvinceName    string `json:"province_name"`
 }
 
+type snapshotMember struct {
+	Relation       string  `json:"relation"`
+	NationalIDMask *string `json:"national_id_mask"`
+	FullName       string  `json:"full_name"`
+	BirthYear      *int    `json:"birth_year"`
+	AnnualIncome   *int64  `json:"annual_income"`
+}
+
+type snapshotFamily struct {
+	MaritalStatus *string          `json:"marital_status"`
+	Members       []snapshotMember `json:"members"`
+}
+
 type applicantSnapshot struct {
-	FiscalYear   int                   `json:"fiscal_year"`
-	Personal     snapshotPersonal      `json:"personal"`
-	AddressNames snapshotAddressNames  `json:"address_names"`
-	Family       *dto.Family           `json:"family"`
-	Financial    dto.Financial         `json:"financial"`
+	FiscalYear   int                  `json:"fiscal_year"`
+	Personal     snapshotPersonal     `json:"personal"`
+	AddressNames snapshotAddressNames `json:"address_names"`
+	Family       *snapshotFamily      `json:"family"`
+	Financial    dto.Financial        `json:"financial"`
 }
 
 func buildSnapshot(req dto.CreateApplicationRequest, addr repository.ResolvedAddress) ([]byte, error) {
@@ -61,8 +74,32 @@ func buildSnapshot(req dto.CreateApplicationRequest, addr repository.ResolvedAdd
 			DistrictName:    addr.DistrictName,
 			ProvinceName:    addr.ProvinceName,
 		},
-		Family:    req.Family,
+		Family:    maskFamily(req.Family),
 		Financial: req.Financial,
 	}
 	return json.Marshal(s)
+}
+
+func maskFamily(f *dto.Family) *snapshotFamily {
+	if f == nil {
+		return nil
+	}
+	out := &snapshotFamily{
+		MaritalStatus: f.MaritalStatus,
+		Members:       make([]snapshotMember, 0, len(f.Members)),
+	}
+	for _, m := range f.Members {
+		member := snapshotMember{
+			Relation:     m.Relation,
+			FullName:     m.FullName,
+			BirthYear:    m.BirthYear,
+			AnnualIncome: m.AnnualIncome,
+		}
+		if m.NationalID != nil {
+			masked := nationalid.Mask(*m.NationalID)
+			member.NationalIDMask = &masked
+		}
+		out.Members = append(out.Members, member)
+	}
+	return out
 }
