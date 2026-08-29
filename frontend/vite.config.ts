@@ -3,6 +3,8 @@ import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 
+const apiTarget = process.env.API_TARGET ?? `http://localhost:${process.env.HTTP_PORT ?? 8080}`
+
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   resolve: {
@@ -12,8 +14,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
-      '/health': 'http://localhost:8080',
+      '/api': apiTarget,
+      '/health': apiTarget,
     },
   },
 })
