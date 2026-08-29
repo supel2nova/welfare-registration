@@ -23,9 +23,11 @@ const thaiMonths = [
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
 ]
 
+const thaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
+
 export function formatThaiDateTime(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-  return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${toBE(d.getFullYear())} เวลา ${time} น.`
+  return `วัน${thaiDays[d.getDay()]}ที่ ${d.getDate()} ${thaiMonths[d.getMonth()]} พ.ศ. ${toBE(d.getFullYear())} เวลา ${time} น.`
 }
