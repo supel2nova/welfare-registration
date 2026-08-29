@@ -24,6 +24,7 @@ const (
 	CodeUnauthorized   = "AUTH001"
 	CodeForbidden      = "PERM001"
 	CodeInternal       = "SYS001"
+	CodeBusy           = "SYS002"
 )
 
 var messages = map[string]string{
@@ -48,6 +49,7 @@ var messages = map[string]string{
 	CodeUnauthorized:   "ต้องเข้าสู่ระบบก่อน",
 	CodeForbidden:      "ไม่มีสิทธิ์ดำเนินการ",
 	CodeInternal:       "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
+	CodeBusy:           "ระบบกำลังมีผู้ใช้งานจำนวนมาก กรุณาลองใหม่ในอีกสักครู่",
 }
 
 func Message(code string) string { return messages[code] }
@@ -126,4 +128,8 @@ func Internal(cause error) *Error {
 		Message:    messages[CodeInternal],
 		cause:      cause,
 	}
+}
+
+func Busy() *Error {
+	return &Error{HTTPStatus: 503, Code: CodeBusy, Message: messages[CodeBusy]}
 }

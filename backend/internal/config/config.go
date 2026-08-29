@@ -18,6 +18,8 @@ type Config struct {
 	StubDefaultUserID string
 	HashPepper        string
 	EncKey            string
+	MaxInFlight       int
+	MaxBodyBytes      int64
 }
 
 func Load() Config {
@@ -30,6 +32,8 @@ func Load() Config {
 		StubDefaultUserID: get("STUB_DEFAULT_USER_ID", ""),
 		HashPepper:        get("HASH_PEPPER", ""),
 		EncKey:            get("ENC_KEY", ""),
+		MaxInFlight:       getInt("MAX_INFLIGHT", 512),
+		MaxBodyBytes:      int64(getInt("MAX_BODY_BYTES", 1<<20)),
 	}
 }
 
@@ -65,6 +69,14 @@ func get(k, def string) string {
 
 func getBool(k string, def bool) bool {
 	v, err := strconv.ParseBool(os.Getenv(k))
+	if err != nil {
+		return def
+	}
+	return v
+}
+
+func getInt(k string, def int) int {
+	v, err := strconv.Atoi(os.Getenv(k))
 	if err != nil {
 		return def
 	}

@@ -68,6 +68,7 @@ function toApiError(error: unknown): ApiError {
 export function createClient(): AxiosInstance {
   const client = axios.create({
     baseURL: '/',
+    timeout: 30000,
     headers: { 'Content-Type': 'application/json' },
   })
 

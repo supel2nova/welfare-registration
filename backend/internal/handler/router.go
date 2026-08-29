@@ -26,8 +26,11 @@ func NewRouter(d Deps) *gin.Engine {
 	_ = r.SetTrustedProxies(nil)
 	r.Use(middleware.Recovery(), middleware.CORS(d.Cfg.CORSOrigin), gin.Logger())
 
+	// health ต้องลงทะเบียนก่อน InFlight ไม่งั้นตอนโหลดพีค probe จะโดนปฏิเสธ แล้ว k8s รีสตาร์ต pod ซ้ำเติม
 	health := NewHealthHandler(d.Pool)
 	r.GET("/health", health.Get)
+
+	r.Use(middleware.InFlight(d.Cfg.MaxInFlight), middleware.BodyLimit(d.Cfg.MaxBodyBytes))
 
 	ref := NewRefHandler(d.Ref)
 	apps := NewApplicationHandler(d.Apps)

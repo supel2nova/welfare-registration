@@ -177,6 +177,7 @@ export function useRegistrationForm() {
   }
 
   async function submit() {
+    if (isSubmitting.value) return
     formError.value = ''
     fieldErrors.value = {}
     submitState.value = { status: 'submitting' }
