@@ -30,6 +30,13 @@ export function useRegistrationForm() {
         fieldErrors.value = next
       }
     },
+    clearPrefix: (prefix) => {
+      const next: Record<string, string> = {}
+      for (const [path, message] of Object.entries(fieldErrors.value)) {
+        if (!path.startsWith(prefix)) next[path] = message
+      }
+      fieldErrors.value = next
+    },
     clearAll: () => {
       fieldErrors.value = {}
     },

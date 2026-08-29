@@ -105,7 +105,6 @@ watch(
   () => props.selected,
   (o) => {
     if (o) query.value = nameOf(o)
-    else if (options.value.length === 0) query.value = ''
   },
 )
 

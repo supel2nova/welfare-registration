@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import AddressSearch from '@/components/registration/AddressSearch.vue'
+import OptionalMark from '@/components/common/OptionalMark.vue'
 import { useFormContext } from '@/composables/useFormContext'
 import type { AddressInput, AddressOption } from '@/types/api'
 import { cn } from '@/utils/cn'
@@ -71,7 +72,7 @@ function onClearSelection() {
       </label>
 
       <label class="field">
-        <span class="field-label">หมู่</span>
+        <span class="field-label">หมู่<OptionalMark /></span>
         <input
           class="field-input"
           :value="modelValue.moo ?? ''"
@@ -82,11 +83,11 @@ function onClearSelection() {
       </label>
 
       <label class="field">
-        <span class="field-label">ถนน</span>
+        <span class="field-label">ถนน<OptionalMark /></span>
         <input
           class="field-input"
           :value="modelValue.road ?? ''"
-          placeholder="ห้วยแก้ว (ถ้ามี)"
+          placeholder="ห้วยแก้ว"
           :disabled="isSubmitting"
           @input="patch({ road: ($event.target as HTMLInputElement).value || null })"
         />

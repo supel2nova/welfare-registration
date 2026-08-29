@@ -43,6 +43,9 @@ function confirmCancel() {
     <main>
       <div class="mb-6 animate-rise motion-reduce:animate-none">
         <h1 class="mt-1 mb-3 text-[clamp(1.75rem,3vw,2.35rem)] leading-tight">ลงทะเบียนผู้มีสิทธิ</h1>
+        <p class="m-0 text-sm text-ink-muted">
+          ทุกช่องจำเป็นต้องกรอก ยกเว้นช่องที่เขียนว่า (ถ้ามี)
+        </p>
       </div>
 
       <form @submit.prevent="submit">
@@ -58,11 +61,11 @@ function confirmCancel() {
 
         <p v-if="formError" class="banner banner-error">{{ formError }}</p>
 
-        <div class="btn-row">
+        <div class="form-actions">
+          <AppButton :disabled="isSubmitting" @click="onCancel">ยกเลิก</AppButton>
           <AppButton type="submit" variant="primary" :disabled="isSubmitting">
             {{ isSubmitting ? 'กำลังบันทึก…' : 'บันทึกใบสมัคร' }}
           </AppButton>
-          <AppButton :disabled="isSubmitting" @click="onCancel">ยกเลิก</AppButton>
         </div>
       </form>
     </main>

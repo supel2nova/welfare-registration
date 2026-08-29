@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/common/AppButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import FieldSelect from '@/components/fields/FieldSelect.vue'
 import FormSection from '@/components/common/FormSection.vue'
 import MemberRow from '@/components/registration/MemberRow.vue'
@@ -16,11 +17,11 @@ const emit = defineEmits<{
   'update:include': [value: boolean]
 }>()
 
-const { isSubmitting, clearAll } = useFormContext()
+const { isSubmitting, clearPrefix } = useFormContext()
 
 function removeMember(idx: number) {
   props.family.members.splice(idx, 1)
-  clearAll()
+  clearPrefix('family.members[')
 }
 </script>
 
@@ -54,11 +55,10 @@ function removeMember(idx: number) {
         :index="idx"
         @remove="removeMember(idx)"
       />
-      <div class="btn-row">
-        <AppButton :disabled="isSubmitting" @click="family.members.push(emptyMember())">
+              <AppButton variant="add" :disabled="isSubmitting" @click="family.members.push(emptyMember())">
+          <AppIcon name="plus" />
           เพิ่มสมาชิก
         </AppButton>
-      </div>
     </template>
   </FormSection>
 </template>

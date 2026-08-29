@@ -219,6 +219,10 @@ func TestValidateFormat(t *testing.T) {
 			r.Financial.Assets[1].Amount = json.Number("8.555")
 		}, "financial.assets[1].amount", apperror.CodeNegative},
 
+		{"จำนวนทรัพย์สินยาวเกินที่คอลัมน์ numeric(14,2) รับได้", func(r *dto.CreateApplicationRequest) {
+			r.Financial.Assets[0].Amount = json.Number("99999999999999999")
+		}, "financial.assets[0].amount", apperror.CodeNegative},
+
 		{"เจ้าของบัญชีร่วมเป็นศูนย์", func(r *dto.CreateApplicationRequest) {
 			r.Financial.Assets[0].JointAccountHolders = i(0)
 		}, "financial.assets[0].joint_account_holders", apperror.CodeNegative},
@@ -335,6 +339,10 @@ func TestValidateFormatPasses(t *testing.T) {
 
 		{"ที่ดิน 8.5 ไร่", func(r *dto.CreateApplicationRequest) {
 			r.Financial.Assets[1].Amount = json.Number("8.50")
+		}},
+
+		{"จำนวนเต็ม 12 หลักพอดี ยังรับได้", func(r *dto.CreateApplicationRequest) {
+			r.Financial.Assets[0].Amount = json.Number("999999999999")
 		}},
 
 		{"ไม่มีทรัพย์สินและหนี้สินเลย", func(r *dto.CreateApplicationRequest) {

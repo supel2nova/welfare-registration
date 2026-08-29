@@ -23,12 +23,14 @@ const base = computed(() => `financial.income_sources[${props.index}]`)
     <div class="grid-form-2">
       <FieldSelect
         :path="`${base}.source_type`"
+        required
         label="แหล่งรายได้"
         v-model="income.source_type"
         :options="incomeTypeOptions"
       />
       <FieldNumber
         :path="`${base}.annual_amount`"
+        required
         label="รายได้ต่อปี"
         :model-value="income.annual_amount"
         format="amount"

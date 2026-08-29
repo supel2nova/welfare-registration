@@ -99,85 +99,47 @@ export const registrationSubmitSchema = registrationBaseSchema.superRefine((val,
     return
   }
 
-  if (!p.national_id || !nationalId.test(p.national_id)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'national_id'],
-      message: 'เลขประจำตัวประชาชนไม่ถูกต้อง',
-    })
-  }
-  if (!p.title) {
-    ctx.addIssue({ code: 'custom', path: ['personal', 'title'], message: 'เลือกคำนำหน้า' })
-  }
-  if (!p.first_name || !isThaiName(p.first_name)) {
-    ctx.addIssue({ code: 'custom', path: ['personal', 'first_name'], message: 'ชื่อไม่ถูกต้อง' })
-  }
-  if (!p.last_name || !isThaiName(p.last_name)) {
-    ctx.addIssue({ code: 'custom', path: ['personal', 'last_name'], message: 'นามสกุลไม่ถูกต้อง' })
-  }
-  if (p.birth_year_be == null) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'birth_year'],
-      message: 'ปีเกิดไม่ถูกต้อง',
-    })
-  }
-  if (!p.phone || !(mobilePhone.test(p.phone) || landlinePhone.test(p.phone))) {
-    ctx.addIssue({ code: 'custom', path: ['personal', 'phone'], message: 'หมายเลขโทรศัพท์ไม่ถูกต้อง' })
-  }
+  const need = (path: string[], label: string) =>
+    ctx.addIssue({ code: 'custom', path, message: `กรุณาระบุ${label}` })
+  const pick = (path: string[], label: string) =>
+    ctx.addIssue({ code: 'custom', path, message: `กรุณาเลือก${label}` })
+  const wrong = (path: string[], message: string) =>
+    ctx.addIssue({ code: 'custom', path, message })
+
+  if (!p.national_id) need(['personal', 'national_id'], 'เลขประจำตัวประชาชน')
+  else if (!nationalId.test(p.national_id))
+    wrong(['personal', 'national_id'], 'เลขประจำตัวประชาชนต้องมี 13 หลัก')
+
+  if (!p.title) pick(['personal', 'title'], 'คำนำหน้า')
+
+  if (!p.first_name?.trim()) need(['personal', 'first_name'], 'ชื่อ')
+  else if (!isThaiName(p.first_name)) wrong(['personal', 'first_name'], 'ชื่อต้องเป็นภาษาไทย')
+
+  if (!p.last_name?.trim()) need(['personal', 'last_name'], 'นามสกุล')
+  else if (!isThaiName(p.last_name)) wrong(['personal', 'last_name'], 'นามสกุลต้องเป็นภาษาไทย')
+
+  if (p.birth_year_be == null) need(['personal', 'birth_year'], 'ปีเกิด')
+
+  if (!p.phone) need(['personal', 'phone'], 'เบอร์โทร')
+  else if (!(mobilePhone.test(p.phone) || landlinePhone.test(p.phone)))
+    wrong(['personal', 'phone'], 'มือถือ 10 หลัก หรือเบอร์บ้าน 9 หลัก')
 
   if (p.no_laser) {
     const note = (p.id_verify_note ?? '').trim()
-    if (note.length < 10) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['personal', 'id_verify_note'],
-        message: 'ต้องระบุเหตุผลอย่างน้อย 10 ตัวอักษร',
-      })
-    }
-  } else if (!p.laser_id || !laser.test(p.laser_id)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'laser_id'],
-      message: 'รหัสหลังบัตรไม่ถูกต้อง',
-    })
+    if (!note) need(['personal', 'id_verify_note'], 'เหตุผลที่ยืนยันด้วยตา')
+    else if (note.length < 10)
+      wrong(['personal', 'id_verify_note'], 'ต้องระบุเหตุผลอย่างน้อย 10 ตัวอักษร')
+  } else if (!p.laser_id) {
+    need(['personal', 'laser_id'], 'รหัสหลังบัตร')
+  } else if (!laser.test(p.laser_id)) {
+    wrong(['personal', 'laser_id'], 'รหัสหลังบัตรไม่ถูกต้อง เช่น JT8-1234567-89')
   }
 
   const a = p.address
-  if (!a?.house_no?.trim()) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'address', 'house_no'],
-      message: 'กรอกบ้านเลขที่',
-    })
-  }
-  if (!a?.province_code) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'address', 'province_code'],
-      message: 'เลือกจังหวัด',
-    })
-  }
-  if (!a?.district_code) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'address', 'district_code'],
-      message: 'เลือกอำเภอ',
-    })
-  }
-  if (!a?.subdistrict_code) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'address', 'subdistrict_code'],
-      message: 'เลือกตำบล',
-    })
-  }
-  if (!a?.postal_code || !/^\d{5}$/.test(a.postal_code)) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['personal', 'address', 'postal_code'],
-      message: 'รหัสไปรษณีย์ไม่ถูกต้อง',
-    })
+  if (!a?.house_no?.trim()) need(['personal', 'address', 'house_no'], 'บ้านเลขที่')
+
+  if (!a?.subdistrict_code || !a?.district_code || !a?.province_code || !a?.postal_code) {
+    pick(['personal', 'address', 'subdistrict_code'], 'ตำบล/แขวง จากช่องค้นหา')
   }
 })
 

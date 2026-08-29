@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useFormContext } from '@/composables/useFormContext'
+import OptionalMark from '@/components/common/OptionalMark.vue'
 import { cn } from '@/utils/cn'
 
 const props = defineProps<{
@@ -12,8 +13,11 @@ const props = defineProps<{
   max?: number
   step?: number | string
   disabled?: boolean
+  required?: boolean
+  optional?: boolean
   format?: 'amount'
   suffix?: string
+  maxDigits?: number
 }>()
 
 const emit = defineEmits<{
@@ -23,6 +27,7 @@ const emit = defineEmits<{
 const { fieldErrors, isSubmitting, clear } = useFormContext()
 const error = computed(() => fieldErrors.value[props.path] ?? '')
 const grouped = computed(() => props.format === 'amount')
+const capped = computed(() => props.maxDigits != null && !grouped.value)
 
 function group(raw: string): string {
   if (raw === '') return ''
@@ -44,6 +49,14 @@ const displayValue = computed(() => {
 
 function onInput(e: Event) {
   const el = e.target as HTMLInputElement
+
+  if (capped.value) {
+    const digits = el.value.replace(/\D/g, '').slice(0, props.maxDigits)
+    el.value = digits
+    emit('update:modelValue', digits === '' ? null : Number(digits))
+    clear(props.path)
+    return
+  }
 
   if (!grouped.value) {
     const raw = el.value
@@ -70,7 +83,7 @@ function onInput(e: Event) {
 
 <template>
   <label class="field">
-    <span class="field-label">{{ label }}</span>
+    <span class="field-label">{{ label }}<OptionalMark v-if="optional" /></span>
     <div v-if="suffix" class="field-affix">
       <input
         :class="cn('field-input', 'pr-14', 'text-right', 'tabular-nums', error && 'field-input-error')"
@@ -82,6 +95,7 @@ function onInput(e: Event) {
         :max="grouped ? undefined : max"
         :step="grouped ? undefined : (step ?? 1)"
         :disabled="disabled || isSubmitting"
+      :aria-required="required || undefined"
         :aria-invalid="error ? true : undefined"
         @input="onInput"
       />
@@ -90,8 +104,9 @@ function onInput(e: Event) {
     <input
       v-else
       :class="cn('field-input', grouped && 'text-right tabular-nums', error && 'field-input-error')"
-      :type="grouped ? 'text' : 'number'"
-      :inputmode="grouped ? 'decimal' : undefined"
+      :type="grouped || capped ? 'text' : 'number'"
+      :inputmode="grouped ? 'decimal' : capped ? 'numeric' : undefined"
+      :maxlength="capped ? maxDigits : undefined"
       :value="displayValue"
       :placeholder="placeholder"
       :min="grouped ? undefined : min"

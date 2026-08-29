@@ -130,6 +130,10 @@
     @apply bg-danger-600 text-white hover:bg-danger-700;
   }
 
+  .btn-add {
+    @apply mt-3 w-full justify-center border border-dashed border-line bg-transparent font-normal text-ink-muted hover:border-brand-500 hover:bg-brand-50 hover:text-brand-600;
+  }
+
   .btn-soft {
     @apply border-transparent bg-brand-50 text-brand-700 hover:bg-brand-100;
   }
@@ -175,6 +179,10 @@
 
   .field-input-mono {
     @apply font-display tracking-wide tabular-nums;
+  }
+
+  .field-optional {
+    @apply ml-1.5 font-normal text-ink-muted;
   }
 
   .field-error {
@@ -245,6 +253,62 @@
     @apply mt-0.5 h-[1.15rem] w-[1.15rem] shrink-0 cursor-pointer accent-[var(--color-brand-600)];
   }
 
+  .picker-backdrop {
+    @apply fixed inset-0 z-[55];
+  }
+
+  .picker {
+    @apply absolute z-[60] rounded-md border border-line bg-white p-3 shadow-card;
+  }
+
+  .picker-head {
+    @apply mb-2 flex items-center justify-between gap-2 text-sm font-semibold text-ink;
+  }
+
+  .picker-title {
+    @apply tabular-nums text-ink-muted;
+  }
+
+  .picker-nav {
+    @apply cursor-pointer rounded-[var(--radius-control)] border-0 bg-transparent px-2 py-1 text-sm font-semibold text-brand-600 hover:bg-brand-50 disabled:cursor-not-allowed disabled:text-ink-muted disabled:opacity-50;
+  }
+
+  .picker-nav-static {
+    @apply text-sm font-semibold text-ink-muted;
+  }
+
+  .picker-grid {
+    @apply grid gap-1;
+  }
+
+  .picker-grid-3 {
+    @apply grid-cols-3;
+  }
+
+  .picker-grid-7 {
+    @apply grid-cols-7;
+  }
+
+  .picker-dayname {
+    @apply py-1 text-center text-xs font-semibold text-ink-muted;
+  }
+
+  .picker-cell {
+    @apply min-h-9 cursor-pointer rounded-[var(--radius-control)] border-0 bg-transparent px-1 py-2 text-sm tabular-nums text-ink hover:bg-brand-50 disabled:cursor-not-allowed disabled:text-ink-muted disabled:opacity-40 disabled:hover:bg-transparent;
+  }
+
+  .picker-cell-on {
+    @apply bg-brand-600 font-semibold text-white hover:bg-brand-700;
+  }
+
+  .picker-foot {
+    @apply mt-2 flex items-center justify-between gap-2 border-t border-line pt-2;
+  }
+
+  .picker-confirm {
+    @apply cursor-pointer rounded-[var(--radius-control)] border border-line bg-transparent px-3 py-1.5 text-sm font-semibold text-ink hover:bg-brand-50;
+  }
+
   .combo-list {
     @apply absolute z-[60] w-max max-w-[26rem] list-none overflow-y-auto rounded-md border border-line bg-white p-1 shadow-card;
   }
@@ -273,9 +337,6 @@
     @apply absolute right-0 top-7 z-20 w-72 rounded-md border border-line bg-white p-3 text-sm font-normal leading-relaxed text-ink shadow-card;
   }
 
-  .field-group-label {
-    @apply mb-1.5 flex items-center justify-end gap-3 text-sm font-semibold text-ink-muted;
-  }
 
   .item-head {
     @apply mb-2.5 flex items-center justify-between gap-2;
@@ -285,8 +346,16 @@
     @apply text-sm font-semibold text-ink-muted;
   }
 
+  .app-icon {
+    @apply h-[1.15em] w-[1.15em] shrink-0;
+  }
+
   .btn-remove {
     @apply inline-flex min-h-10 cursor-pointer items-center rounded-[var(--radius-control)] border border-transparent bg-transparent px-3 py-2 text-sm font-semibold text-danger-600 transition-colors hover:bg-danger-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .form-actions {
+    @apply mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5;
   }
 
   .btn-row {

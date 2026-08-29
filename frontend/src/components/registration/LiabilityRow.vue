@@ -23,12 +23,14 @@ const base = computed(() => `financial.liabilities[${props.index}]`)
     <div class="grid-form-2">
       <FieldSelect
         :path="`${base}.liability_type`"
+        required
         label="หนี้สิน"
         v-model="liability.liability_type"
         :options="liabilityTypeOptions"
       />
       <FieldNumber
         :path="`${base}.credit_limit`"
+        required
         label="วงเงิน"
         :model-value="liability.credit_limit"
         format="amount"

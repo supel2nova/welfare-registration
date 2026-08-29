@@ -4,7 +4,7 @@ import { cn } from '@/utils/cn'
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'ghost' | 'danger' | 'soft'
+    variant?: 'primary' | 'ghost' | 'danger' | 'soft' | 'add'
     type?: 'button' | 'submit'
     disabled?: boolean
   }>(),

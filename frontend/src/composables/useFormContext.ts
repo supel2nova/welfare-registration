@@ -4,6 +4,7 @@ export type FormContext = {
   fieldErrors: Ref<Record<string, string>>
   isSubmitting: Ref<boolean>
   clear: (path: string) => void
+  clearPrefix: (prefix: string) => void
   clearAll: () => void
   setError: (path: string, message: string) => void
 }

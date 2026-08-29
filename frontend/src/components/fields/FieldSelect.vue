@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useFormContext } from '@/composables/useFormContext'
 import type { SelectOption } from '@/types/form'
+import OptionalMark from '@/components/common/OptionalMark.vue'
 import { cn } from '@/utils/cn'
 
 const props = defineProps<{
@@ -10,6 +11,8 @@ const props = defineProps<{
   modelValue: string | null
   options: SelectOption[]
   disabled?: boolean
+  required?: boolean
+  optional?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -27,11 +30,12 @@ function onChange(e: Event) {
 
 <template>
   <label class="field">
-    <span class="field-label">{{ label }}</span>
+    <span class="field-label">{{ label }}<OptionalMark v-if="optional" /></span>
     <select
       :class="cn('field-input', 'field-select', error && 'field-input-error')"
       :value="modelValue ?? ''"
       :disabled="disabled || isSubmitting"
+      :aria-required="required || undefined"
       :aria-invalid="error ? true : undefined"
       @change="onChange"
     >

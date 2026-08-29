@@ -29,6 +29,7 @@ function onTypeChange(value: string) {
     <div class="grid-form-2">
       <FieldSelect
         :path="`${base}.asset_type`"
+        required
         label="ทรัพย์สิน"
         :model-value="asset.asset_type"
         :options="assetTypeOptions"
@@ -36,6 +37,7 @@ function onTypeChange(value: string) {
       />
       <FieldNumber
         :path="`${base}.amount`"
+        required
         label="จำนวน"
         :model-value="typeof asset.amount === 'number' ? asset.amount : Number(asset.amount)"
         format="amount"

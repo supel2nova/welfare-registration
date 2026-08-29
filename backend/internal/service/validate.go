@@ -21,7 +21,7 @@ var (
 	thaiDigit     = regexp.MustCompile(`[\x{0E50}-\x{0E59}]`)
 	mobile        = regexp.MustCompile(`^0[689]\d{8}$`)
 	landline      = regexp.MustCompile(`^0[2-7]\d{7}$`)
-	amount        = regexp.MustCompile(`^\d+(\.\d{1,2})?$`)
+	amount        = regexp.MustCompile(`^\d{1,12}(\.\d{1,2})?$`)
 	digits2       = regexp.MustCompile(`^\d{2}$`)
 	digits4       = regexp.MustCompile(`^\d{4}$`)
 	digits5       = regexp.MustCompile(`^\d{5}$`)

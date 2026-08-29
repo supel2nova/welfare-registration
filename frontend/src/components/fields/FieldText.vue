@@ -11,6 +11,7 @@ import {
   parseNationalId,
   parsePhone,
 } from '@/utils/idFormat'
+import OptionalMark from '@/components/common/OptionalMark.vue'
 import { cn } from '@/utils/cn'
 
 const props = defineProps<{
@@ -21,6 +22,8 @@ const props = defineProps<{
   type?: string
   maxlength?: number
   disabled?: boolean
+  required?: boolean
+  optional?: boolean
   format?: 'national_id' | 'laser_id' | 'phone'
 }>()
 
@@ -102,7 +105,7 @@ function onBlur() {
 
 <template>
   <label class="field">
-    <span class="field-label">{{ label }}</span>
+    <span class="field-label">{{ label }}<OptionalMark v-if="optional" /></span>
     <input
       :class="cn('field-input', format && 'field-input-mono', error && 'field-input-error')"
       :type="type ?? 'text'"
@@ -111,6 +114,7 @@ function onBlur() {
       :placeholder="placeholder"
       :maxlength="inputMaxlength"
       :disabled="disabled || isSubmitting"
+      :aria-required="required || undefined"
       :aria-invalid="error ? true : undefined"
       autocomplete="off"
       spellcheck="false"

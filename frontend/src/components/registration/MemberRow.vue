@@ -24,19 +24,22 @@ const base = computed(() => `family.members[${props.index}]`)
     <div class="grid-form-2">
       <FieldSelect
         :path="`${base}.relation`"
+        required
         label="ความสัมพันธ์"
         v-model="member.relation"
         :options="relationOptions"
       />
       <FieldText
         :path="`${base}.full_name`"
+        required
         label="ชื่อ-นามสกุล"
         v-model="member.full_name"
         placeholder="สมหญิง ใจดี"
       />
       <FieldText
         :path="`${base}.national_id`"
-        label="เลขบัตร (ถ้ามี)"
+        label="เลขบัตร"
+        optional
         v-model="member.national_id"
         format="national_id"
         placeholder="1-2345-67890-12-1"
@@ -44,6 +47,7 @@ const base = computed(() => `family.members[${props.index}]`)
       <FieldNumber
         :path="`${base}.annual_income`"
         label="รายได้ต่อปี"
+        optional
         v-model="member.annual_income"
         format="amount"
         placeholder="0"

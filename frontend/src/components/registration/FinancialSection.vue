@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/common/AppButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import AssetRow from '@/components/registration/AssetRow.vue'
 import FieldNumber from '@/components/fields/FieldNumber.vue'
 import FormSection from '@/components/common/FormSection.vue'
@@ -13,11 +14,11 @@ const props = defineProps<{
   financial: FinancialForm
 }>()
 
-const { isSubmitting, clearAll } = useFormContext()
+const { isSubmitting, clearPrefix } = useFormContext()
 
-function removeFrom(list: unknown[], idx: number) {
+function removeFrom(list: unknown[], idx: number, prefix: string) {
   list.splice(idx, 1)
-  clearAll()
+  clearPrefix(prefix)
 }
 </script>
 
@@ -32,18 +33,18 @@ function removeFrom(list: unknown[], idx: number) {
       :key="'inc-' + idx"
       :income="s"
       :index="idx"
-      @remove="removeFrom(financial.income_sources, idx)"
+      @remove="removeFrom(financial.income_sources, idx, 'financial.income_sources[')"
     />
-    <div class="btn-row">
-      <AppButton :disabled="isSubmitting" @click="financial.income_sources.push(emptyIncome())">
+          <AppButton variant="add" :disabled="isSubmitting" @click="financial.income_sources.push(emptyIncome())">
+        <AppIcon name="plus" />
         เพิ่มแหล่งรายได้
       </AppButton>
-    </div>
 
     <div class="mt-5">
       <FieldNumber
         path="financial.expense_to_others"
-        label="เงินส่งคนอื่นต่อปี"
+        required
+        label="ค่าเลี้ยงดูผู้อื่นต่อปี"
         :model-value="financial.expense_to_others"
         format="amount"
         placeholder="0"
@@ -59,13 +60,12 @@ function removeFrom(list: unknown[], idx: number) {
       :key="'ast-' + idx"
       :asset="a"
       :index="idx"
-      @remove="removeFrom(financial.assets, idx)"
+      @remove="removeFrom(financial.assets, idx, 'financial.assets[')"
     />
-    <div class="btn-row">
-      <AppButton :disabled="isSubmitting" @click="financial.assets.push(emptyAsset())">
-        เพิ่มทรัพย์สิน
+          <AppButton variant="add" :disabled="isSubmitting" @click="financial.assets.push(emptyAsset())">
+        <AppIcon name="plus" />
+        เพิ่มรายการทรัพย์สิน
       </AppButton>
-    </div>
 
     <h3 class="sub-head mt-5">หนี้สิน</h3>
     <p v-if="financial.liabilities.length === 0" class="empty-note">ยังไม่ได้ระบุ</p>
@@ -74,13 +74,12 @@ function removeFrom(list: unknown[], idx: number) {
       :key="'liab-' + idx"
       :liability="l"
       :index="idx"
-      @remove="removeFrom(financial.liabilities, idx)"
+      @remove="removeFrom(financial.liabilities, idx, 'financial.liabilities[')"
     />
-    <div class="btn-row">
-      <AppButton :disabled="isSubmitting" @click="financial.liabilities.push(emptyLiability())">
-        เพิ่มหนี้สิน
+          <AppButton variant="add" :disabled="isSubmitting" @click="financial.liabilities.push(emptyLiability())">
+        <AppIcon name="plus" />
+        เพิ่มรายการหนี้สิน
       </AppButton>
-    </div>
 
     <label class="check-row">
       <input

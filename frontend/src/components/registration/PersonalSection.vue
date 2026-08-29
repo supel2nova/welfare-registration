@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BirthDateField from '@/components/registration/BirthDateField.vue'
+import BirthDatePicker from '@/components/registration/BirthDatePicker.vue'
 import FieldNumber from '@/components/fields/FieldNumber.vue'
 import FieldSelect from '@/components/fields/FieldSelect.vue'
 import FieldText from '@/components/fields/FieldText.vue'
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   'update:fiscalYear': [value: number]
 }>()
 
-const { isSubmitting, clearAll } = useFormContext()
+const { isSubmitting, clear } = useFormContext()
 
 function onNoLaserChange() {
   if (props.personal.no_laser) {
@@ -26,7 +26,8 @@ function onNoLaserChange() {
     props.personal.id_verify_note = null
     if (props.personal.laser_id == null) props.personal.laser_id = ''
   }
-  clearAll()
+  clear('personal.laser_id')
+  clear('personal.id_verify_note')
 }
 </script>
 
@@ -35,6 +36,7 @@ function onNoLaserChange() {
     <div class="grid-form-2">
       <FieldNumber
         path="fiscal_year"
+        required
         label="ปีงบประมาณ (ค.ศ.)"
         :model-value="fiscalYear"
         :min="2020"
@@ -42,12 +44,14 @@ function onNoLaserChange() {
       />
       <FieldSelect
         path="personal.title"
+        required
         label="คำนำหน้า"
         v-model="personal.title"
         :options="titleOptions"
       />
       <FieldText
         path="personal.national_id"
+        required
         label="เลขประจำตัวประชาชน"
         v-model="personal.national_id"
         format="national_id"
@@ -55,6 +59,7 @@ function onNoLaserChange() {
       />
       <FieldText
         path="personal.phone"
+        required
         label="เบอร์โทร"
         v-model="personal.phone"
         format="phone"
@@ -62,12 +67,14 @@ function onNoLaserChange() {
       />
       <FieldText
         path="personal.first_name"
+        required
         label="ชื่อ"
         v-model="personal.first_name"
         placeholder="สมชาย"
       />
       <FieldText
         path="personal.last_name"
+        required
         label="นามสกุล"
         v-model="personal.last_name"
         placeholder="ใจดี"
@@ -75,7 +82,7 @@ function onNoLaserChange() {
     </div>
 
     <div class="mt-3.5">
-      <BirthDateField
+      <BirthDatePicker
         :year="personal.birth_year_be"
         :month="personal.birth_month"
         :day="personal.birth_day"
@@ -105,6 +112,7 @@ function onNoLaserChange() {
     <FieldText
       v-if="!personal.no_laser"
       path="personal.laser_id"
+        required
       label="รหัสหลังบัตร (Laser)"
       v-model="personal.laser_id"
       format="laser_id"
@@ -113,6 +121,7 @@ function onNoLaserChange() {
     <FieldText
       v-else
       path="personal.id_verify_note"
+        required
       label="เหตุผลที่ยืนยันด้วยตา"
       v-model="personal.id_verify_note"
       placeholder="เช่น บัตรตลอดชีพ รหัสหลังบัตรเลือนอ่านไม่ออก"
