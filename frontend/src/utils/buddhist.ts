@@ -1,3 +1,7 @@
+export function currentFiscalYear(now = new Date()): number {
+  return now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear()
+}
+
 export function toCE(buddhistYear: number): number {
   return buddhistYear - 543
 }

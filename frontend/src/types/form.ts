@@ -29,6 +29,7 @@ export type LiabilityRow = {
 export type PersonalForm = {
   national_id: string
   laser_id: string | null
+  id_verify_reason: string
   id_verify_note: string | null
   title: string
   first_name: string

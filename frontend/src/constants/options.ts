@@ -6,6 +6,18 @@ import type {
   RegistrationForm,
   SelectOption,
 } from '@/types/form'
+import { currentFiscalYear } from '@/utils/buddhist'
+
+export const idVerifyReasonOptions: SelectOption[] = [
+  { value: 'LIFETIME_CARD', label: 'บัตรตลอดชีพ ไม่มีรหัสหลังบัตร' },
+  { value: 'WORN', label: 'รหัสหลังบัตรชำรุด อ่านไม่ออก' },
+  { value: 'OTHER', label: 'อื่นๆ (ระบุเอง)' },
+]
+
+export function idVerifyNoteText(reason: string, note: string | null): string | null {
+  if (reason === 'OTHER') return note
+  return idVerifyReasonOptions.find((o) => o.value === reason)?.label ?? null
+}
 
 export const titleOptions: SelectOption[] = [
   { value: 'นาย', label: 'นาย' },
@@ -103,10 +115,11 @@ export function emptyLiability(): LiabilityRow {
 
 export function emptyForm(): RegistrationForm {
   return {
-    fiscal_year: 2026,
+    fiscal_year: currentFiscalYear(),
     personal: {
       national_id: '',
       laser_id: '',
+      id_verify_reason: '',
       id_verify_note: '',
       title: 'นาย',
       first_name: '',

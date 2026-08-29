@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import BirthDatePicker from '@/components/registration/BirthDatePicker.vue'
-import FieldNumber from '@/components/fields/FieldNumber.vue'
+import BirthDatePicker from '@/components/common/BirthDatePicker.vue'
 import FieldSelect from '@/components/fields/FieldSelect.vue'
 import FieldText from '@/components/fields/FieldText.vue'
 import FormSection from '@/components/common/FormSection.vue'
 import { useFormContext } from '@/composables/useFormContext'
-import { titleOptions } from '@/constants/options'
+import { idVerifyReasonOptions, titleOptions } from '@/constants/options'
 import type { PersonalForm } from '@/types/form'
 
 const props = defineProps<{
   personal: PersonalForm
-  fiscalYear: number
-}>()
-
-const emit = defineEmits<{
-  'update:fiscalYear': [value: number]
 }>()
 
 const { isSubmitting, clear } = useFormContext()
@@ -26,44 +20,31 @@ function onNoLaserChange() {
     props.personal.id_verify_note = null
     if (props.personal.laser_id == null) props.personal.laser_id = ''
   }
+  props.personal.id_verify_reason = ''
   clear('personal.laser_id')
+  clear('personal.id_verify_reason')
   clear('personal.id_verify_note')
+
+}
+
+function onReasonChange(value: string) {
+  props.personal.id_verify_reason = value
+  if (value !== 'OTHER') {
+    props.personal.id_verify_note = null
+    clear('personal.id_verify_note')
+  }
 }
 </script>
 
 <template>
   <FormSection title="ข้อมูลส่วนตัว">
-    <div class="grid-form-2">
-      <FieldNumber
-        path="fiscal_year"
-        required
-        label="ปีงบประมาณ (ค.ศ.)"
-        :model-value="fiscalYear"
-        :min="2020"
-        @update:model-value="(v) => emit('update:fiscalYear', v ?? 2026)"
-      />
+    <div class="grid-form-3">
       <FieldSelect
         path="personal.title"
         required
         label="คำนำหน้า"
         v-model="personal.title"
         :options="titleOptions"
-      />
-      <FieldText
-        path="personal.national_id"
-        required
-        label="เลขประจำตัวประชาชน"
-        v-model="personal.national_id"
-        format="national_id"
-        placeholder="1-2345-67890-12-1"
-      />
-      <FieldText
-        path="personal.phone"
-        required
-        label="เบอร์โทร"
-        v-model="personal.phone"
-        format="phone"
-        placeholder="099-119-2231"
       />
       <FieldText
         path="personal.first_name"
@@ -81,7 +62,15 @@ function onNoLaserChange() {
       />
     </div>
 
-    <div class="mt-3.5">
+    <div class="grid-form-2 mt-3.5">
+      <FieldText
+        path="personal.national_id"
+        required
+        label="เลขประจำตัวประชาชน"
+        v-model="personal.national_id"
+        format="national_id"
+        placeholder="1-2345-67890-12-1"
+      />
       <BirthDatePicker
         :year="personal.birth_year_be"
         :month="personal.birth_month"
@@ -90,6 +79,14 @@ function onNoLaserChange() {
         @update:month="(v) => (personal.birth_month = v)"
         @update:day="(v) => (personal.birth_day = v)"
         @update:precision="(v) => (personal.birth_precision = v)"
+      />
+      <FieldText
+        path="personal.phone"
+        required
+        label="เบอร์โทร"
+        v-model="personal.phone"
+        format="phone"
+        placeholder="099-119-2231"
       />
     </div>
 
@@ -118,13 +115,23 @@ function onNoLaserChange() {
       format="laser_id"
       placeholder="JT8-1234567-89"
     />
-    <FieldText
-      v-else
-      path="personal.id_verify_note"
+    <template v-else>
+      <FieldSelect
+        path="personal.id_verify_reason"
         required
-      label="เหตุผลที่ยืนยันด้วยตา"
-      v-model="personal.id_verify_note"
-      placeholder="เช่น บัตรตลอดชีพ รหัสหลังบัตรเลือนอ่านไม่ออก"
-    />
+        label="เหตุผลที่ไม่ใช้รหัสหลังบัตร"
+        :model-value="personal.id_verify_reason"
+        :options="idVerifyReasonOptions"
+        @update:model-value="onReasonChange"
+      />
+      <FieldText
+        v-if="personal.id_verify_reason === 'OTHER'"
+        path="personal.id_verify_note"
+        required
+        label="ระบุเหตุผล"
+        v-model="personal.id_verify_note"
+        placeholder="อย่างน้อย 10 ตัวอักษร"
+      />
+    </template>
   </FormSection>
 </template>

@@ -56,6 +56,7 @@ export const registrationBaseSchema = z.object({
       national_id: z.string().optional(),
       laser_id: z.string().nullable().optional(),
       id_verify_method: z.string().optional(),
+      id_verify_reason: z.string().optional(),
       id_verify_note: z.string().nullable().optional(),
       title: z.string().optional(),
       first_name: z.string().optional(),
@@ -125,10 +126,13 @@ export const registrationSubmitSchema = registrationBaseSchema.superRefine((val,
     wrong(['personal', 'phone'], 'มือถือ 10 หลัก หรือเบอร์บ้าน 9 หลัก')
 
   if (p.no_laser) {
-    const note = (p.id_verify_note ?? '').trim()
-    if (!note) need(['personal', 'id_verify_note'], 'เหตุผลที่ยืนยันด้วยตา')
-    else if (note.length < 10)
-      wrong(['personal', 'id_verify_note'], 'ต้องระบุเหตุผลอย่างน้อย 10 ตัวอักษร')
+    if (!p.id_verify_reason) pick(['personal', 'id_verify_reason'], 'เหตุผลที่ไม่ใช้รหัสหลังบัตร')
+    else if (p.id_verify_reason === 'OTHER') {
+      const note = (p.id_verify_note ?? '').trim()
+      if (!note) need(['personal', 'id_verify_note'], 'เหตุผล')
+      else if (note.length < 10)
+        wrong(['personal', 'id_verify_note'], 'ต้องระบุเหตุผลอย่างน้อย 10 ตัวอักษร')
+    }
   } else if (!p.laser_id) {
     need(['personal', 'laser_id'], 'รหัสหลังบัตร')
   } else if (!laser.test(p.laser_id)) {

@@ -10,26 +10,21 @@ import PersonalSection from '@/components/registration/PersonalSection.vue'
 import UserSwitcher from '@/components/common/UserSwitcher.vue'
 import { useRegistrationForm } from '@/composables/useRegistrationForm'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const { form, isSubmitting, duplicateOpen, duplicateInfo, formError, isDirty, reset, submit } =
   useRegistrationForm()
 
 const cancelOpen = ref(false)
 
 function onCancel() {
-  if (!isDirty.value) {
-    void router.push({ name: 'home' })
-    return
-  }
+  if (!isDirty.value) return
   cancelOpen.value = true
 }
 
 function confirmCancel() {
   cancelOpen.value = false
   reset()
-  void router.push({ name: 'home' })
+  window.scrollTo({ top: 0 })
 }
 </script>
 
@@ -43,13 +38,10 @@ function confirmCancel() {
     <main>
       <div class="mb-6 animate-rise motion-reduce:animate-none">
         <h1 class="mt-1 mb-3 text-[clamp(1.75rem,3vw,2.35rem)] leading-tight">ลงทะเบียนผู้มีสิทธิ</h1>
-        <p class="m-0 text-sm text-ink-muted">
-          ทุกช่องจำเป็นต้องกรอก ยกเว้นช่องที่เขียนว่า (ถ้ามี)
-        </p>
       </div>
 
       <form @submit.prevent="submit">
-        <PersonalSection v-model:fiscal-year="form.fiscal_year" :personal="form.personal" />
+        <PersonalSection :personal="form.personal" />
 
         <FormSection title="ที่อยู่">
           <AddressSelector v-model="form.personal.address" />
@@ -74,10 +66,10 @@ function confirmCancel() {
 
     <ConfirmDialog
       :open="cancelOpen"
-      title="ยกเลิกใบสมัคร"
-      message="ข้อมูลที่กรอกไว้ทั้งหมดจะหายไป ต้องการยกเลิกใช่ไหม"
-      confirm-label="ยกเลิกใบสมัคร"
-      cancel-label="ดำเนินการต่อ"
+      title="ล้างข้อมูลในฟอร์ม"
+      message="ข้อมูลที่กรอกไว้ทั้งหมดจะหายไป ต้องการล้างฟอร์มใช่ไหม"
+      confirm-label="ล้างข้อมูล"
+      cancel-label="กรอกต่อ"
       danger
       @confirm="confirmCancel"
       @close="cancelOpen = false"

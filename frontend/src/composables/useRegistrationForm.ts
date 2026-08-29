@@ -3,7 +3,8 @@ import { useRouter } from 'vue-router'
 import { createApplication } from '@/api/application'
 import { ApiRequestError } from '@/api/client'
 import { provideFormContext } from '@/composables/useFormContext'
-import { emptyForm } from '@/constants/options'
+import { useApplicationStore } from '@/stores/application'
+import { emptyForm, idVerifyNoteText } from '@/constants/options'
 import { registrationSubmitSchema } from '@/schemas/registration'
 import type { CreateApplicationRequest, DuplicateInfo, SubmitState } from '@/types/api'
 import type { RegistrationForm } from '@/types/form'
@@ -11,6 +12,7 @@ import { toCE } from '@/utils/buddhist'
 
 export function useRegistrationForm() {
   const router = useRouter()
+  const applications = useApplicationStore()
 
   const form = reactive<RegistrationForm>(emptyForm())
   const fieldErrors = ref<Record<string, string>>({})
@@ -83,7 +85,7 @@ export function useRegistrationForm() {
         national_id: p.national_id,
         laser_id: p.no_laser ? null : p.laser_id || null,
         id_verify_method: p.no_laser ? 'MANUAL_CARD_CHECK' : 'LASER_CODE',
-        id_verify_note: p.no_laser ? p.id_verify_note : null,
+        id_verify_note: p.no_laser ? idVerifyNoteText(p.id_verify_reason, p.id_verify_note) : null,
         title: p.title,
         first_name: p.first_name,
         last_name: p.last_name,
@@ -199,15 +201,8 @@ export function useRegistrationForm() {
     try {
       const res = await createApplication(buildPayload())
       submitState.value = { status: 'success', application: res }
-      await router.push({
-        name: 'success',
-        query: {
-          application_no: res.application_no,
-          registration_unit: res.registration_unit,
-          submitted_at: res.submitted_at,
-          status: res.status,
-        },
-      })
+      applications.keep(res)
+      await router.push({ name: 'success' })
     } catch (err: unknown) {
       if (err instanceof ApiRequestError) {
         if (err.status === 409 && err.data && typeof err.data === 'object') {
