@@ -218,6 +218,126 @@ frontend/src/
 
 The file is generated. Do not edit it by hand.
 
+## Capacity
+
+All numbers below were measured, not estimated. Reproduce them with the bundled load generator:
+
+```bash
+go run ./cmd/loadtest -url http://localhost:8080 -vus 200 -n 20000 -offset 1
+```
+
+It generates unique national IDs that pass the mod-11 checksum, so every request reaches the write path instead of bouncing off format validation. Pass a comma-separated list to `-url` to spread load across replicas.
+
+### Headline number
+
+On the recommended spec below, with a 200 ms identity-provider call, the system sustains **~1,900 applications/second**. That is 1,000,000 applications in about 9 minutes of continuous processing, or 100,000 in under a minute.
+
+Spread over a normal registration window the load is trivial: 1,000,000 applicants across 30 days averages 0.4 req/s. Even a first-day spike at 30× the average is ~12 req/s, roughly 0.6% of capacity.
+
+### Connection pool sizing
+
+12-core dev machine, 2,000 requests, unique IDs, identity stub answering instantly:
+
+| `DB_MAX_CONNS` | 10 VU | 25 VU | 50 VU | 100 VU | 200 VU |
+| --- | --- | --- | --- | --- | --- |
+| 10 | 1,963 | 2,113 | 2,242 | 2,210 | 2,321 rps |
+| 30 | 2,167 | 2,763 | 2,891 | 2,883 | 2,708 rps |
+| 60 | 2,000 | 2,573 | 2,919 | 3,190 | 2,681 rps |
+
+The old hardcoded value of 10 left roughly 30% of throughput on the table. Past 30 there is almost nothing left to gain.
+
+### Sustained throughput
+
+20,000 requests per run, `DB_MAX_CONNS=30`, identity stub instant:
+
+| Concurrency | Throughput | p50 | p95 | p99 | Result |
+| --- | --- | --- | --- | --- | --- |
+| 50 | 3,026 rps | 16 ms | 21 ms | 25 ms | all 201 |
+| 100 | 3,066 rps | 32 ms | 39 ms | 43 ms | all 201 |
+| 200 | 3,024 rps | 65 ms | 76 ms | 85 ms | all 201 |
+| 400 | 2,776 rps | 140 ms | 178 ms | 200 ms | all 201 |
+| 800 | 3,044 rps | 259 ms | 286 ms | 316 ms | all 201 |
+
+Throughput is flat from 50 to 800 concurrent while latency grows linearly — the system is saturated but degrades by queueing, never by dropping or erroring.
+
+Data integrity after 20,000 concurrent writes: 20,000 applications, 20,000 citizens, 20,000 addresses, 20,000 verifications, zero duplicate application numbers, zero duplicate ID hashes.
+
+### Finding the real bottleneck
+
+Postgres in a CPU-capped container, API pinned with `GOMAXPROCS`, 200 concurrent, identity stub instant:
+
+| Database CPU | Throughput | p50 | p95 |
+| --- | --- | --- | --- |
+| 1 vCPU | 1,120 rps | 189 ms | 200 ms |
+| 2 vCPU | 2,323 rps | 87 ms | 95 ms |
+| 4 vCPU | 2,882 rps | 68 ms | 77 ms |
+| 8 vCPU | 2,888 rps | 68 ms | 77 ms |
+
+**The database is the bottleneck, and 4 vCPU is the knee of the curve.** Going to 8 vCPU buys 0.2%.
+
+Giving the API more CPU changes nothing: 2 vCPU produced 2,282 rps and 4 vCPU produced 2,191 rps with the database held constant — within noise of each other.
+
+### With a realistic identity-provider call
+
+The identity stub answers instantly, which is not realistic. With a simulated 200 ms provider call (`STUB_KYC_DELAY_MS=200`) on API 2 vCPU + database 4 vCPU:
+
+| Concurrency | Throughput | p50 | p95 |
+| --- | --- | --- | --- |
+| 100 | 424 rps | 234 ms | 240 ms |
+| 200 | 762 rps | 262 ms | 271 ms |
+| 400 | 1,297 rps | 307 ms | 324 ms |
+| 800 | 1,873 rps | 427 ms | 456 ms |
+
+Latency here is provider wait, not database work. Throughput rises with concurrency because more calls wait in parallel.
+
+### Replica scaling
+
+Three API instances sharing one database, 1,200 concurrent, 200 ms provider call:
+
+| Replicas | Pool per replica | Total connections | Throughput | p95 |
+| --- | --- | --- | --- | --- |
+| 1 | 16 | 16 | 2,000 rps (with errors) | 701 ms |
+| 3 | 16 | 48 | 2,764 rps | 654 ms |
+| 6 | 16 | 96 | 2,469 rps | 856 ms |
+
+Scaling from 1 to 3 replicas helps. Scaling from 3 to 6 makes things worse — the bottleneck has already moved to the single database, and extra replicas just add queueing.
+
+### The scaling trap
+
+Postgres defaults to `max_connections = 100`. Every replica opens its own pool, so replicas multiply:
+
+| Configuration | Connections requested | Result |
+| --- | --- | --- |
+| 6 replicas × pool 24 | 144 | **4,071 of 8,000 requests returned 500** |
+| 10 replicas × pool 24 | 240 | **5,868 of 8,000 requests returned 500** |
+| 10 replicas × pool 8 | 80 | all 8,000 succeeded, 2,595 rps |
+
+This is the dangerous failure mode: load rises, the autoscaler adds replicas, connections exceed the limit, and the system fails harder the more it scales. Keep `maxReplicas × DB_MAX_CONNS` comfortably below `max_connections`, or put PgBouncer in front.
+
+### Recommended production spec
+
+| Component | Spec | Why |
+| --- | --- | --- |
+| API | 2 vCPU / 2 GB, **3 replicas** | One replica saturates the database; three is for availability, not throughput |
+| `DB_MAX_CONNS` | **16** per replica | 3 × 16 = 48, safely under `max_connections` |
+| PostgreSQL | **4 vCPU / 8 GB** | Measured knee of the curve |
+
+Do not provision the database below 2 vCPU. At 1 vCPU throughput halves and p99 jumps from 99 ms to 309 ms — that is a cliff, not a slope.
+
+### What these numbers do not cover
+
+- Everything ran on one machine over loopback: no real network, no TLS, and the load generator competed for the same CPUs.
+- Runs lasted seconds, not hours. Connection leaks, index bloat, and autovacuum behaviour under a growing table are untested.
+- Traffic was all-success. No mix of duplicates, validation failures, or concurrent `address-search` reads.
+- Concurrency above ~1,000 could not be tested: the loopback interface runs out of ephemeral ports and the load generator fails before the server does.
+- The identity provider was simulated. **If the real provider rate-limits to, say, 50 req/s, then 50 req/s is the true ceiling regardless of everything above.** That number matters more than any hardware choice here.
+
+### A burst of 100,000 or more at the same instant
+
+Draining a simultaneous burst at ~2,500 rps takes 40 seconds for 100,000 requests and about 6 minutes 40 seconds for 1,000,000. Typical load balancer timeouts are 30–60 seconds, so a true simultaneous burst of that size fails on timeouts — and it fails at the edge, not in the database. Each in-flight request costs roughly 26 KB of memory in the API (measured: 1,000 concurrent requests held 46 MB), so a million concurrent would need about 26 GB just to hold connections open.
+
+No amount of extra hardware fixes this, because the single database is the serialization point. The fix is to spread arrivals: stagger registration windows by the last digit of the national ID, or put a virtual waiting room in front. Staggering 1,000,000 applicants across 10 groups and an 8-hour day yields 3.5 req/s — 0.14% of capacity.
+
 ## Tests
 
 ```bash
