@@ -3,7 +3,7 @@ export
 MIGRATE = migrate -path backend/db/migrations -database "$(DATABASE_URL)"
 
 .PHONY: up down migrate rollback seed psql api web test tidy
-up:       ; docker compose up -d
+up:       ; docker compose up -d --wait
 down:     ; docker compose down
 migrate:  ; $(MIGRATE) up
 rollback: ; $(MIGRATE) down 1
